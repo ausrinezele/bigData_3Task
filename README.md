@@ -94,12 +94,6 @@ Import more records after the first test:
 python scripts/01_import_parallel.py --drop --max-rows 500000 --workers 4
 ```
 
-Use `--max-rows 0` only if the machine has enough memory and disk space for the full CSV:
-
-```bash
-python scripts/01_import_parallel.py --drop --max-rows 0 --workers 4
-```
-
 The importer reads the CSV in batches and uses a separate `MongoClient` inside each parallel insert task.
 
 When `--drop` is used, the importer drops `ais.raw_positions`, recreates it as a sharded collection using:
@@ -109,3 +103,29 @@ When `--drop` is used, the importer drops `ais.raw_positions`, recreates it as a
 ```
 
 and then imports the CSV data.
+
+## Task 3: Parallel Noise Filtering
+
+Filter valid AIS records into a separate sharded collection:
+
+```bash
+python scripts/02_filter_noise_parallel.py --drop --workers 4
+```
+
+The filtering script removes records with missing or invalid values for:
+
+- `Navigational status`
+- `MMSI`
+- `Latitude`
+- `Longitude`
+- `ROT`
+- `SOG`
+- `COG`
+- `Heading`
+- `timestamp`
+
+It also keeps only vessels with at least 100 valid data points and writes the result to:
+
+```text
+ais.filtered_positions
+```
