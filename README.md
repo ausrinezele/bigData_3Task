@@ -71,3 +71,33 @@ Expected output file:
 ```text
 data/aisdk-2026-04-18.csv
 ```
+
+## Task 2: Parallel Data Insertion
+
+Install Python dependencies:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Import a safe first sample of 100,000 AIS records:
+
+```bash
+python scripts/01_import_parallel.py --drop --max-rows 100000 --workers 4
+```
+
+Import more records after the first test:
+
+```bash
+python scripts/01_import_parallel.py --drop --max-rows 500000 --workers 4
+```
+
+Use `--max-rows 0` only if the machine has enough memory and disk space for the full CSV:
+
+```bash
+python scripts/01_import_parallel.py --drop --max-rows 0 --workers 4
+```
+
+The importer reads the CSV in batches and uses a separate `MongoClient` inside each parallel insert task.
