@@ -1,0 +1,54 @@
+services:
+  configsvr1:
+    image: mongo:7
+    container_name: configsvr1
+    command: mongod --configsvr --replSet configReplSet --port 27019 --bind_ip_all
+    networks:
+      - mongo-cluster
+
+  shard1a:
+    image: mongo:7
+    container_name: shard1a
+    command: mongod --shardsvr --replSet shard1ReplSet --port 27018 --bind_ip_all
+    networks:
+      - mongo-cluster
+
+  shard1b:
+    image: mongo:7
+    container_name: shard1b
+    command: mongod --shardsvr --replSet shard1ReplSet --port 27018 --bind_ip_all
+    networks:
+      - mongo-cluster
+
+  shard2a:
+    image: mongo:7
+    container_name: shard2a
+    command: mongod --shardsvr --replSet shard2ReplSet --port 27018 --bind_ip_all
+    networks:
+      - mongo-cluster
+
+  shard2b:
+    image: mongo:7
+    container_name: shard2b
+    command: mongod --shardsvr --replSet shard2ReplSet --port 27018 --bind_ip_all
+    networks:
+      - mongo-cluster
+
+  mongos:
+    image: mongo:7
+    container_name: mongos
+    depends_on:
+      - configsvr1
+      - shard1a
+      - shard1b
+      - shard2a
+      - shard2b
+    command: mongos --configdb configReplSet/configsvr1:27019 --port 27017 --bind_ip_all
+    ports:
+      - "27017:27017"
+    networks:
+      - mongo-cluster
+
+networks:
+  mongo-cluster:
+    driver: bridge
