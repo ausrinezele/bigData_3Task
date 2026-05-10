@@ -85,10 +85,10 @@ docker exec mongos mongosh --port 27017 --quiet --eval '
 sh.enableSharding("ais");
 
 const dbName = db.getSiblingDB("ais");
-dbName.raw_positions.createIndex({ MMSI: 1 });
+dbName.raw_positions.createIndex({ MMSI: "hashed" });
 
 try {
-  sh.shardCollection("ais.raw_positions", { MMSI: 1 });
+  sh.shardCollection("ais.raw_positions", { MMSI: "hashed" });
   print("ais.raw_positions sharded by MMSI");
 } catch (e) {
   if (String(e).includes("already sharded")) {
@@ -98,5 +98,4 @@ try {
   }
 }
 '
-
 echo "MongoDB sharded cluster is ready at mongodb://localhost:27017"

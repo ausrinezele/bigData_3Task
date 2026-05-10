@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from pymongo import MongoClient
-from pymongo.errors import BulkWriteError
+from pymongo.errors import BulkWriteError, OperationFailure
 from tqdm import tqdm
 
 
@@ -121,12 +121,45 @@ def create_indexes(mongo_uri, db_name, collection_name):
     client = MongoClient(mongo_uri)
     collection = client[db_name][collection_name]
 
+    collection.create_index([("MMSI", "hashed")])
     collection.create_index([("MMSI", 1)])
     # timestamp turetu buti naudingas skaiciuojant delta t
     collection.create_index([("MMSI", 1), ("timestamp", 1)]) 
     collection.create_index([("timestamp", 1)])
 
     client.close()
+
+
+def ensure_sharded_collection(mongo_uri, db_name, collection_name):
+    client = MongoClient(mongo_uri)
+    collection = client[db_name][collection_name]
+    namespace = f"{db_name}.{collection_name}"
+
+    try:
+        client.admin.command("enableSharding", db_name)
+    except OperationFailure as exc:
+        if exc.code not in (23,):
+            raise
+
+    collection.create_index([("MMSI", "hashed")])
+
+    try:
+        client.admin.command(
+            {
+                "shardCollection": namespace,
+                "key": {"MMSI": "hashed"},
+            }
+        )
+        print(f"{namespace} sharded by {{ MMSI: 'hashed' }}")
+    except OperationFailure as exc:
+        message = str(exc)
+        if "already sharded" in message or "Already sharded" in message:
+            print(f"{namespace} already sharded")
+        else:
+            raise
+    finally:
+        client.close()
+
 
 # deletes the old collection
 def drop_collection(mongo_uri, db_name, collection_name):
@@ -178,6 +211,9 @@ def main():
     if args.drop:
         print(f"Dropping {args.db}.{args.collection}...")
         drop_collection(args.mongo_uri, args.db, args.collection)
+
+    print(f"Ensuring {args.db}.{args.collection} is sharded by hashed MMSI...")
+    ensure_sharded_collection(args.mongo_uri, args.db, args.collection)
 
     print(f"Creating indexes for {args.db}.{args.collection}...")
     create_indexes(args.mongo_uri, args.db, args.collection)

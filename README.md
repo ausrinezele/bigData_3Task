@@ -33,7 +33,7 @@ bash scripts/check-cluster.sh
 The `ais` database is enabled for sharding. The `ais.raw_positions` collection is sharded by:
 
 ```javascript
-{ MMSI: 1 }
+{ MMSI: "hashed" }
 ```
 
 ## Manual Test
@@ -101,3 +101,11 @@ python scripts/01_import_parallel.py --drop --max-rows 0 --workers 4
 ```
 
 The importer reads the CSV in batches and uses a separate `MongoClient` inside each parallel insert task.
+
+When `--drop` is used, the importer drops `ais.raw_positions`, recreates it as a sharded collection using:
+
+```javascript
+{ MMSI: "hashed" }
+```
+
+and then imports the CSV data.
