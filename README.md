@@ -144,10 +144,6 @@ Run the script:
 
 `python scripts/03_calculate_delta_t_histogram.py --drop --workers 4`
 
-If the machine has limited resources, use fewer workers:
-
-`python scripts/03_calculate_delta_t_histogram.py --drop --workers 2`
-
 The script generates these files:
 
 - `outputs/delta_t_values.csv`
