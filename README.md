@@ -142,7 +142,8 @@ The calculated delta t values are inserted into the MongoDB collection `ais.delt
 
 Run the script:
 
-`python scripts/03_calculate_delta_t_histogram.py --drop --workers 4`
+```bash
+python scripts/03_calculate_delta_t_histogram.py --drop --workers 4
 
 The script generates these files:
 
@@ -150,25 +151,28 @@ The script generates these files:
 - `outputs/delta_t_histogram.png`
 - `outputs/delta_t_summary.txt`
 
-In our run, the script processed 219 vessels and inserted 11,277 delta t documents into `ais.delta_t_positions`.
+In our run with 500,000 imported AIS records, the script processed 845 vessels and inserted 173,809 delta t documents into `ais.delta_t_positions`.
 
 Summary statistics:
 
-- Delta t count: 11,277
+- Delta t count: 173,809
 - Minimum: 1,000 ms
-- Maximum: 98,000 ms
-- Mean: 8,056.31 ms
-- Median: 9,000 ms
-- 25th percentile: 6,000 ms
-- 75th percentile: 10,000 ms
-- 95th percentile: 11,000 ms
+- Maximum: 648,000 ms
+- Mean: 10,304.87 ms
+- Median: 10,000 ms
+- 25th percentile: 9,000 ms
+- 75th percentile: 11,000 ms
+- 95th percentile: 20,000 ms
 
 ### Histogram Analysis
 
-The histogram shows that most AIS messages in the filtered dataset are received between approximately 6,000 ms and 10,000 ms. The median value is 9,000 ms, which means that a typical vessel update happens about every 9 seconds.
+The histogram shows that most AIS messages in the filtered dataset are received around 9,000 ms to 11,000 ms. The median value is 10,000 ms, which means that a typical vessel update happens about every 10 seconds.
 
-The 95th percentile is 11,000 ms, meaning that 95% of all calculated delta t values are 11 seconds or less. This shows that most vessels report their AIS positions frequently and consistently.
+The 25th percentile is 9,000 ms and the 75th percentile is 11,000 ms. This means that the middle 50% of AIS message intervals are between 9 and 11 seconds. Therefore, most vessels in the filtered dataset have stable and frequent AIS reporting intervals.
 
-A few larger delta t values are also present, with the maximum value reaching 98,000 ms. These larger gaps may be caused by missing AIS messages, temporary loss of receiver coverage, vessels leaving or entering coverage, or changes in reporting behavior.
+The 95th percentile is 20,000 ms, meaning that 95% of all calculated delta t values are 20 seconds or less. This shows that most vessels report their AIS positions frequently, but some records have longer gaps.
 
-Overall, the histogram suggests that most filtered vessels have stable AIS reporting intervals, while only a small number of records show longer communication gaps.
+A few larger delta t values are also present, with the maximum value reaching 648,000 ms. These larger gaps may be caused by missing AIS messages, temporary loss of receiver coverage, vessels leaving or entering coverage, or changes in reporting behavior.
+
+Overall, the histogram suggests that most filtered vessels have stable AIS reporting intervals around 10 seconds, while only a small number of records show longer communication gaps.
+
