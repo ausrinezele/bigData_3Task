@@ -144,6 +144,7 @@ Run the script:
 
 ```bash
 python scripts/03_calculate_delta_t_histogram.py --drop --workers 4
+```
 
 The script generates these files:
 
