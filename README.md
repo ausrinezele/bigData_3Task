@@ -130,7 +130,6 @@ It also keeps only vessels with at least 100 valid data points and writes the re
 ais.filtered_positions
 ```
 
-```markdown
 ## Task 4: Calculation of Delta t and Histogram Generation
 
 After filtering the noisy AIS records, delta t is calculated from the MongoDB collection `ais.filtered_positions`.
