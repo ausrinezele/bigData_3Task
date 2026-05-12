@@ -129,3 +129,51 @@ It also keeps only vessels with at least 100 valid data points and writes the re
 ```text
 ais.filtered_positions
 ```
+
+```markdown
+## Task 4: Calculation of Delta t and Histogram Generation
+
+After filtering the noisy AIS records, delta t is calculated from the MongoDB collection `ais.filtered_positions`.
+
+For each vessel, records are grouped by `MMSI` and sorted by `timestamp`. The time difference between two subsequent data points for the same vessel is calculated in milliseconds:
+
+`delta_t_ms = current timestamp - previous timestamp`
+
+The calculated delta t values are inserted into the MongoDB collection `ais.delta_t_positions`.
+
+Run the script:
+
+`python scripts/03_calculate_delta_t_histogram.py --drop --workers 4`
+
+If the machine has limited resources, use fewer workers:
+
+`python scripts/03_calculate_delta_t_histogram.py --drop --workers 2`
+
+The script generates these files:
+
+- `outputs/delta_t_values.csv`
+- `outputs/delta_t_histogram.png`
+- `outputs/delta_t_summary.txt`
+
+In our run, the script processed 219 vessels and inserted 11,277 delta t documents into `ais.delta_t_positions`.
+
+Summary statistics:
+
+- Delta t count: 11,277
+- Minimum: 1,000 ms
+- Maximum: 98,000 ms
+- Mean: 8,056.31 ms
+- Median: 9,000 ms
+- 25th percentile: 6,000 ms
+- 75th percentile: 10,000 ms
+- 95th percentile: 11,000 ms
+
+### Histogram Analysis
+
+The histogram shows that most AIS messages in the filtered dataset are received between approximately 6,000 ms and 10,000 ms. The median value is 9,000 ms, which means that a typical vessel update happens about every 9 seconds.
+
+The 95th percentile is 11,000 ms, meaning that 95% of all calculated delta t values are 11 seconds or less. This shows that most vessels report their AIS positions frequently and consistently.
+
+A few larger delta t values are also present, with the maximum value reaching 98,000 ms. These larger gaps may be caused by missing AIS messages, temporary loss of receiver coverage, vessels leaving or entering coverage, or changes in reporting behavior.
+
+Overall, the histogram suggests that most filtered vessels have stable AIS reporting intervals, while only a small number of records show longer communication gaps.
